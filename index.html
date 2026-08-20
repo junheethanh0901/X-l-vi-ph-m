@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KIỂM TRA VỆ SINH KING CF</title>
+    <!-- Thư viện hỗ trợ xuất Excel đơn giản -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #1b5e20;
+            --secondary-color: #2e7d32;
+            --accent-color: #f44336;
+            --bg-color: #f1f8e9;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --nav-height: 60px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            padding-bottom: 80px;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        h1 { margin: 0; font-size: 1.2rem; letter-spacing: 1px; }
+
+        .container { padding: 15px; max-width: 600px; margin: auto; }
+
+        /* Card Style */
+        .card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+        }
+
+        /* Form Elements */
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+        select, input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+        }
+        select:focus, input:focus { border-color: var(--primary-color); }
+
+        .fine-display {
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 8px;
+            color: #e65100;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* Photo Upload */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .photo-item {
+            position: relative;
+            aspect-ratio: 1/1;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #eee;
+        }
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .btn-remove-photo {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(255,0,0,0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .photo-add {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #ccc;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* Buttons */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary-color); color: var(--primary-color); }
+        .btn-small { padding: 5px 10px; font-size: 0.8rem; width: auto; display: inline-block; }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: var(--nav-height);
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.7rem;
+            flex: 1;
+        }
+        .nav-item.active { color: var(--primary-color); }
+        .nav-item i { font-size: 1.4rem; margin-bottom: 2px; }
+
+        /* History & Stats */
+        .violation-card {
+            border-left: 5px solid var(--accent-color);
+        }
+        .history-meta { font-size: 0.85rem; color: #666; }
+        .history-amount { color: var(--accent-color); font-weight: bold; }
+        
+        .stats-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .stats-box {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stats-box .val { font-size: 1.4rem; font-weight: bold; }
+        .stats-box .lbl { font-size: 0.8rem; opacity: 0.8; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: left; padding: 10px; border-bottom: 1px solid #eee; }
+        th { font-size: 0.8rem; color: #666; }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top:0; left:0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            border-radius: 15px;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .view-image-full { width: 100%; border-radius: 10px; margin-bottom: 10px; }
+
+        /* Utilities */
+        .hidden { display: none; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .chart-bar-container { height: 20px; background: #eee; border-radius: 10px; overflow: hidden; margin-top: 5px; }
+        .chart-bar-fill { height: 100%; background: var(--secondary-color); }
+
+        footer { text-align: center; padding: 20px; color: #999; font-size: 0.8rem; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🧹 KIỂM TRA VỆ SINH KING CF</h1>
+    </header>
+
+    <div class="container">
+        <!-- PAGE 1: HOME/SUMMARY -->
+        <div id="page-home" class="page">
+            <div class="card">
+                <div class="section-title">🏠 TỔNG QUAN HÔM NAY</div>
+                <div id="home-today-summary">
+                    Đang tải...
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="showPage('form')">➕ GHI NHẬN VI PHẠM MỚI</button>
+            <br>
+            <div class="card">
+                <div class="section-title">📊 TOP VI PHẠM THÁNG NÀY</div>
+                <div id="home-month-chart"></div>
+            </div>
+        </div>
+
+        <!-- PAGE 2: FORM -->
+        <div id="page-form" class="page hidden">
+            <div class="card">
+                <div class="section-title">📝 GHI NHẬN VI PHẠM</div>
+                
+                <label>Nhân viên vi phạm</label>
+                <select id="f-staff"></select>
+
+                <label>Hạng mục vệ sinh</label>
+                <select id="f-category"></select>
+
+                <label>Ngày vi phạm</label>
+                <input type="date" id="f-date">
+
+                <label>Hình ảnh bằng chứng (Chụp nhiều ảnh)</label>
+                <input type="file" id="f-file" accept="image/*" multiple hidden onchange="handleFiles(this.files)">
+                <div class="photo-grid" id="photo-preview-grid">
+                    <div class="photo-item photo-add" onclick="document.getElementById('f-file').click()">
+                        <span>📷 Chụp ảnh</span>
+                    </div>
+                </div>
+
+                <div class="fine-display">
+                    💸 Mức trừ: 10.000đ
+                </div>
+
+                <button class="btn btn-primary" onclick="saveViolation()">➕ LƯU VI PHẠM</button>
+            </div>
+        </div>
+
+        <!-- PAGE 3: HISTORY -->
+        <div id="page-history" class="page hidden">
+            <div class="card">
+                <div class="section-title">📋 LỊCH SỬ VI PHẠM</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                    <select id="h-filter-month" onchange="renderHistory()"></select>
+                    <select id="h-filter-staff" onchange="renderHistory()">
+                        <option value="">Tất cả NV</option>
+                    </select>
+                </div>
+                <div id="history-list"></div>
+            </div>
+        </div>
+
+        <!-- PAGE 4: STATS -->
+        <div id="page-stats" class="page hidden">
+            <div class="card">
+                <div class="section-title">📊 THỐNG KÊ CHI TIẾT</div>
+                <select id="s-filter-month" onchange="renderStats()"></select>
+                
+                <div class="stats-summary" id="stats-summary-data">
+                    <!-- Dynamic -->
+                </div>
+
+                <div class="section-title">👥 THEO NHÂN VIÊN</div>
+                <div id="stats-staff-table"></div>
+
+                <div class="section-title">🧹 THEO HẠNG MỤC</div>
+                <div id="stats-category-chart"></div>
+            </div>
+        </div>
+
+        <!-- PAGE 5: SETTINGS -->
+        <div id="page-settings" class="page hidden">
+            <div class="card">
+                <div class="section-title">⚙️ CÀI ĐẶT HỆ THỐNG</div>
+                
+                <label>Quản lý Nhân viên (Cách nhau bằng dấu phẩy)</label>
+                <textarea id="set-staff" rows="3"></textarea>
+                
+                <label>Quản lý Hạng mục (Cách nhau bằng dấu phẩy)</label>
+                <textarea id="set-categories" rows="5"></textarea>
+                
+                <button class="btn btn-outline btn-small" onclick="saveSettings()">Lưu cài đặt</button>
+            </div>
+
+            <div class="card">
+                <div class="section-title">📥 XUẤT DỮ LIỆU</div>
+                <button class="btn btn-outline" style="margin-bottom:10px" onclick="exportToExcel()">Xuất Excel (Tháng hiện tại)</button>
+                <button class="btn btn-outline" onclick="exportBackup()">💾 Sao lưu (JSON)</button>
+                <label style="margin-top:10px">Khôi phục từ file:</label>
+                <input type="file" id="import-file" accept=".json" onchange="importBackup(this)">
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav>
+        <a href="javascript:void(0)" class="nav-item active" onclick="showPage('home', this)"><i>🏠</i>Tổng quan</a>
+        <a href="javascript:void(0)" class="nav-item" onclick="showPage('form', this)"><i>➕</i>Ghi nhận</a>
+        <a href="javascript:void(0)" class="nav-item" onclick="showPage('history', this)"><i>📋</i>Lịch sử</a>
+        <a href="javascript:void(0)" class="nav-item" onclick="showPage('stats', this)"><i>📊</i>Thống kê</a>
+        <a href="javascript:void(0)" class="nav-item" onclick="showPage('settings', this)"><i>⚙️</i>Cài đặt</a>
+    </nav>
+
+    <!-- Photo Modal -->
+    <div id="photo-modal" class="modal" onclick="this.style.display='none'">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div id="modal-body"></div>
+            <button class="btn btn-outline" onclick="document.getElementById('photo-modal').style.display='none'">Đóng</button>
+        </div>
+    </div>
+
+    <footer>
+        Design by Huỳnh Nhật Thanh - 189547
+    </footer>
+
+    <script>
+        // --- DATABASE LOGIC (IndexedDB) ---
+        const DB_NAME = "KingCF_HygieneDB";
+        const DB_VERSION = 1;
+        let db;
+
+        const initDB = () => {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onerror = (e) => reject("Error opening DB");
+                request.onsuccess = (e) => {
+                    db = e.target.result;
+                    resolve(db);
+                };
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains("violations")) {
+                        db.createObjectStore("violations", { keyPath: "id", autoIncrement: true });
+                    }
+                    if (!db.objectStoreNames.contains("settings")) {
+                        db.createObjectStore("settings", { keyPath: "key" });
+                    }
+                };
+            });
+        };
+
+        // --- STATE & CONSTANTS ---
+        let currentPhotos = [];
+        let staffList = ["Tưởng", "Nghĩa"];
+        let categories = ["Quầy pha", "Tủ mát", "Sân trước", "Sân sau", "Lầu", "Luồng", "Bàn ghế", "Nhà WC", "Chỗ để dụng cụ vệ sinh", "Khu vực rửa ly", "Khu vực rửa dụng cụ", "Thùng rác", "Kho", "Cửa kính", "Sàn nhà", "Khu vực máy pha cà phê", "Khu vực máy xay", "Khác"];
+
+        // --- APP LOGIC ---
+
+        window.onload = async () => {
+            await initDB();
+            await loadSettings();
+            setupForm();
+            setupFilters();
+            refreshAllPages();
+            
+            // Set default date
+            document.getElementById('f-date').valueAsDate = new Date();
+        };
+
+        async function loadSettings() {
+            const tx = db.transaction("settings", "readonly");
+            const store = tx.objectStore("settings");
+            
+            const sStaff = await getFromStore(store, "staff_list");
+            if (sStaff) staffList = sStaff.value;
+            
+            const sCats = await getFromStore(store, "categories_list");
+            if (sCats) categories = sCats.value;
+
+            document.getElementById('set-staff').value = staffList.join(", ");
+            document.getElementById('set-categories').value = categories.join(", ");
+        }
+
+        function getFromStore(store, key) {
+            return new Promise(resolve => {
+                const req = store.get(key);
+                req.onsuccess = () => resolve(req.result);
+            });
+        }
+
+        async function saveSettings() {
+            const newStaff = document.getElementById('set-staff').value.split(",").map(s => s.trim()).filter(s => s);
+            const newCats = document.getElementById('set-categories').value.split(",").map(s => s.trim()).filter(s => s);
+            
+            const tx = db.transaction("settings", "readwrite");
+            tx.objectStore("settings").put({ key: "staff_list", value: newStaff });
+            tx.objectStore("settings").put({ key: "categories_list", value: newCats });
+            
+            staffList = newStaff;
+            categories = newCats;
+            
+            setupForm();
+            setupFilters();
+            alert("Đã lưu cài đặt!");
+        }
+
+        function setupForm() {
+            const staffSel = document.getElementById('f-staff');
+            staffSel.innerHTML = staffList.map(s => `<option value="${s}">${s}</option>`).join('');
+            
+            const catSel = document.getElementById('f-category');
+            catSel.innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join('');
+        }
+
+        function setupFilters() {
+            const months = [];
+            const now = new Date();
+            for(let i = 0; i < 12; i++) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                const label = `Tháng ${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+                months.push(`<option value="${val}">${label}</option>`);
+            }
+            
+            document.getElementById('h-filter-month').innerHTML = months.join('');
+            document.getElementById('s-filter-month').innerHTML = months.join('');
+            
+            document.getElementById('h-filter-staff').innerHTML = `<option value="">Tất cả NV</option>` + staffList.map(s => `<option value="${s}">${s}</option>`).join('');
+        }
+
+        function showPage(pageId, navEl) {
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            document.getElementById('page-' + pageId).classList.remove('hidden');
+            
+            if (navEl) {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                navEl.classList.add('active');
+            }
+            
+            refreshAllPages();
+        }
+
+        function handleFiles(files) {
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    currentPhotos.push(file); // Save Blob/File
+                    renderPhotoPreviews();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function renderPhotoPreviews() {
+            const grid = document.getElementById('photo-preview-grid');
+            grid.innerHTML = `<div class="photo-item photo-add" onclick="document.getElementById('f-file').click()"><span>📷 Thêm</span></div>`;
+            
+            currentPhotos.forEach((file, index) => {
+                const url = URL.createObjectURL(file);
+                const div = document.createElement('div');
+                div.className = 'photo-item';
+                div.innerHTML = `
+                    <img src="${url}">
+                    <button class="btn-remove-photo" onclick="removePhoto(${index})">✕</button>
+                `;
+                grid.prepend(div);
+            });
+        }
+
+        function removePhoto(index) {
+            currentPhotos.splice(index, 1);
+            renderPhotoPreviews();
+        }
+
+        async function saveViolation() {
+            const staff = document.getElementById('f-staff').value;
+            const category = document.getElementById('f-category').value;
+            const date = document.getElementById('f-date').value;
+            
+            if (!date) return alert("Vui lòng chọn ngày");
+
+            const record = {
+                staff,
+                category,
+                date,
+                timestamp: new Date().getTime(),
+                amount: 10000,
+                images: currentPhotos // Storing File/Blob objects directly in IndexedDB
+            };
+
+            const tx = db.transaction("violations", "readwrite");
+            tx.objectStore("violations").add(record);
+            
+            tx.oncomplete = () => {
+                alert("Đã ghi nhận vi phạm và trừ 10.000đ");
+                currentPhotos = [];
+                renderPhotoPreviews();
+                showPage('home', document.querySelector('.nav-item'));
+            };
+        }
+
+        async function getAllViolations() {
+            return new Promise(resolve => {
+                const tx = db.transaction("violations", "readonly");
+                const req = tx.objectStore("violations").getAll();
+                req.onsuccess = () => resolve(req.result);
+            });
+        }
+
+        async function refreshAllPages() {
+            const data = await getAllViolations();
+            renderHome(data);
+            renderHistory(data);
+            renderStats(data);
+        }
+
+        function renderHome(data) {
+            const today = new Date().toISOString().split('T')[0];
+            const todayData = data.filter(d => d.date === today);
+            
+            document.getElementById('home-today-summary').innerHTML = `
+                <div class="flex-between">
+                    <span>Số lỗi hôm nay:</span>
+                    <strong>${todayData.length}</strong>
+                </div>
+                <div class="flex-between">
+                    <span>Tổng tiền trừ:</span>
+                    <strong style="color:red">-${(todayData.length * 10000).toLocaleString()}đ</strong>
+                </div>
+            `;
+
+            // Month bar chart (Simple CSS)
+            const currentMonth = new Date().toISOString().substring(0,7);
+            const monthData = data.filter(d => d.date.startsWith(currentMonth));
+            
+            const catCounts = {};
+            monthData.forEach(d => catCounts[d.category] = (catCounts[d.category] || 0) + 1);
+            
+            let chartHtml = '';
+            const sortedCats = Object.entries(catCounts).sort((a,b) => b[1] - a[1]).slice(0,5);
+            
+            if (sortedCats.length === 0) chartHtml = '<p style="text-align:center; color:#999">Chưa có dữ liệu tháng này</p>';
+
+            sortedCats.forEach(([cat, count]) => {
+                const percent = (count / monthData.length) * 100;
+                chartHtml += `
+                    <div style="margin-bottom:10px">
+                        <div class="flex-between" style="font-size:0.8rem"><span>${cat}</span><span>${count} lỗi</span></div>
+                        <div class="chart-bar-container"><div class="chart-bar-fill" style="width:${percent}%"></div></div>
+                    </div>
+                `;
+            });
+            document.getElementById('home-month-chart').innerHTML = chartHtml;
+        }
+
+        async function renderHistory(data) {
+            if (!data) data = await getAllViolations();
+            
+            const filterMonth = document.getElementById('h-filter-month').value;
+            const filterStaff = document.getElementById('h-filter-staff').value;
+            
+            let filtered = data.filter(d => d.date.startsWith(filterMonth));
+            if (filterStaff) filtered = filtered.filter(d => d.staff === filterStaff);
+            
+            filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            const listEl = document.getElementById('history-list');
+            if (filtered.length === 0) {
+                listEl.innerHTML = '<p style="text-align:center; padding:20px; color:#999">Không tìm thấy vi phạm nào.</p>';
+                return;
+            }
+
+            listEl.innerHTML = filtered.map(v => `
+                <div class="card violation-card" onclick="viewDetail(${v.id})">
+                    <div class="flex-between">
+                        <strong>${v.staff}</strong>
+                        <span class="history-amount">-10.000đ</span>
+                    </div>
+                    <div class="history-meta">📅 ${v.date.split('-').reverse().join('/')} | 🧹 ${v.category}</div>
+                    <div style="margin-top:5px; font-size:0.75rem; color:#2e7d32">
+                        ${v.images && v.images.length > 0 ? '📷 Có ' + v.images.length + ' ảnh' : '⚪ Không có ảnh'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function viewDetail(id) {
+            const tx = db.transaction("violations", "readonly");
+            const req = tx.objectStore("violations").get(id);
+            req.onsuccess = () => {
+                const v = req.result;
+                let imagesHtml = '';
+                if (v.images && v.images.length > 0) {
+                    v.images.forEach(blob => {
+                        const url = URL.createObjectURL(blob);
+                        imagesHtml += `<img src="${url}" class="view-image-full">`;
+                    });
+                }
+
+                document.getElementById('modal-body').innerHTML = `
+                    <h3 style="margin-top:0">${v.staff}</h3>
+                    <p><b>Ngày:</b> ${v.date.split('-').reverse().join('/')}</p>
+                    <p><b>Hạng mục:</b> ${v.category}</p>
+                    <p><b>Tiền trừ:</b> <span style="color:red">-10.000đ</span></p>
+                    <div style="margin-top:10px">${imagesHtml}</div>
+                    <button class="btn btn-outline" style="color:red; border-color:red; margin-bottom:10px" onclick="deleteViolation(${v.id})">Xóa vi phạm này</button>
+                `;
+                document.getElementById('photo-modal').style.display = 'flex';
+            };
+        }
+
+        async function deleteViolation(id) {
+            if (!confirm("Bạn chắc chắn muốn xóa lỗi này?")) return;
+            const tx = db.transaction("violations", "readwrite");
+            tx.objectStore("violations").delete(id);
+            tx.oncomplete = () => {
+                document.getElementById('photo-modal').style.display = 'none';
+                refreshAllPages();
+            };
+        }
+
+        async function renderStats(data) {
+            if (!data) data = await getAllViolations();
+            const month = document.getElementById('s-filter-month').value;
+            const filtered = data.filter(d => d.date.startsWith(month));
+
+            // Summary
+            const staffCount = new Set(filtered.map(d => d.staff)).size;
+            const totalFine = filtered.length * 10000;
+
+            document.getElementById('stats-summary-data').innerHTML = `
+                <div class="stats-box">
+                    <div class="val">${staffCount}</div>
+                    <div class="lbl">Nhân viên vi phạm</div>
+                </div>
+                <div class="stats-box" style="background:var(--accent-color)">
+                    <div class="val">${totalFine.toLocaleString()}đ</div>
+                    <div class="lbl">Tổng tiền bị trừ</div>
+                </div>
+            `;
+
+            // Table by staff
+            const staffStats = {};
+            filtered.forEach(d => {
+                if (!staffStats[d.staff]) staffStats[d.staff] = { count: 0, sum: 0 };
+                staffStats[d.staff].count++;
+                staffStats[d.staff].sum += 10000;
+            });
+
+            let tableHtml = `<table><thead><tr><th>Nhân viên</th><th>Số lỗi</th><th>Tổng trừ</th></tr></thead><tbody>`;
+            Object.entries(staffStats).sort((a,b) => b[1].count - a[1].count).forEach(([name, stat]) => {
+                tableHtml += `<tr>
+                    <td><strong>${name}</strong></td>
+                    <td>${stat.count}</td>
+                    <td style="color:red">-${stat.sum.toLocaleString()}đ</td>
+                </tr>`;
+            });
+            tableHtml += `</tbody></table>`;
+            document.getElementById('stats-staff-table').innerHTML = filtered.length ? tableHtml : '<p>Không có dữ liệu</p>';
+
+            // Category chart
+            const catStats = {};
+            filtered.forEach(d => catStats[d.category] = (catStats[d.category] || 0) + 1);
+            let catHtml = '';
+            Object.entries(catStats).sort((a,b) => b[1] - a[1]).forEach(([cat, count]) => {
+                const percent = (count / filtered.length) * 100;
+                catHtml += `
+                    <div style="margin-bottom:10px">
+                        <div class="flex-between" style="font-size:0.85rem"><span>${cat}</span><span>${count}</span></div>
+                        <div class="chart-bar-container"><div class="chart-bar-fill" style="width:${percent}%"></div></div>
+                    </div>
+                `;
+            });
+            document.getElementById('stats-category-chart').innerHTML = filtered.length ? catHtml : '<p>Không có dữ liệu</p>';
+        }
+
+        // --- EXPORT / BACKUP ---
+
+        async function exportToExcel() {
+            const data = await getAllViolations();
+            const month = document.getElementById('s-filter-month').value;
+            const filtered = data.filter(d => d.date.startsWith(month));
+
+            if (filtered.length === 0) return alert("Không có dữ liệu để xuất");
+
+            const csvData = filtered.map(d => ({
+                "Ngày": d.date,
+                "Nhân viên": d.staff,
+                "Hạng mục": d.category,
+                "Số tiền trừ": 10000,
+                "Thời gian lưu": new Date(d.timestamp).toLocaleString()
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(csvData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Vi_Pham");
+            XLSX.writeFile(workbook, `KingCF_VeSinh_${month}.xlsx`);
+        }
+
+        async function exportBackup() {
+            const data = await getAllViolations();
+            const settings = {
+                staff: staffList,
+                categories: categories
+            };
+
+            // Convert Blobs to Base64 for JSON portability
+            const exportData = [];
+            for (let item of data) {
+                const newItem = { ...item };
+                const base64Images = [];
+                if (item.images) {
+                    for (let blob of item.images) {
+                        const base64 = await blobToBase64(blob);
+                        base64Images.push(base64);
+                    }
+                }
+                newItem.images = base64Images;
+                exportData.push(newItem);
+            }
+
+            const fullBackup = {
+                violations: exportData,
+                settings: settings,
+                version: 1,
+                exportedAt: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(fullBackup)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `KingCF_Backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function blobToBase64(blob) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        async function importBackup(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    if (!confirm("Hành động này sẽ ghi đè dữ liệu hiện tại. Tiếp tục?")) return;
+
+                    // Clear and Import
+                    const txV = db.transaction("violations", "readwrite");
+                    txV.objectStore("violations").clear();
+                    
+                    for (let item of backup.violations) {
+                        const blobs = [];
+                        if (item.images) {
+                            for (let b64 of item.images) {
+                                const res = await fetch(b64);
+                                blobs.push(await res.blob());
+                            }
+                        }
+                        item.images = blobs;
+                        delete item.id; // Let IDB auto-increment
+                        txV.objectStore("violations").add(item);
+                    }
+
+                    if (backup.settings) {
+                        const txS = db.transaction("settings", "readwrite");
+                        txS.objectStore("settings").put({ key: "staff_list", value: backup.settings.staff });
+                        txS.objectStore("settings").put({ key: "categories_list", value: backup.settings.categories });
+                    }
+
+                    alert("Khôi phục thành công!");
+                    location.reload();
+                } catch (err) {
+                    console.error(err);
+                    alert("Lỗi khi đọc file backup!");
+                }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
